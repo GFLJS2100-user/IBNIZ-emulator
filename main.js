@@ -1,8 +1,10 @@
 class IBNIZEmulator {
-    constructor(output) {
-        this.output = output;
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.context = canvas.getContext('2d');
         this.stack = [];
         this.rstack = [];
+        this.isVideoContext = true; // Track the current context
         this.instructions = {
             '+': () => this.binaryOp((a, b) => a + b),
             '-': () => this.binaryOp((a, b) => a - b),
@@ -43,17 +45,28 @@ class IBNIZEmulator {
     }
 
     mediaSwitch() {
-        // Implement media switch logic
+        this.isVideoContext = !this.isVideoContext;
     }
 
     render() {
-        this.output.innerHTML = this.stack.join(', ');
+        const imageData = this.context.createImageData(256, 256);
+        for (let i = 0; i < this.stack.length; i++) {
+            const value = this.stack[i] | 0; // Ensure integer
+            const x = (i % 256);
+            const y = (i / 256) | 0;
+            const index = (y * 256 + x) * 4;
+            imageData.data[index] = value & 0xFF; // Red
+            imageData.data[index + 1] = (value >> 8) & 0xFF; // Green
+            imageData.data[index + 2] = (value >> 16) & 0xFF; // Blue
+            imageData.data[index + 3] = 255; // Alpha
+        }
+        this.context.putImageData(imageData, 0, 0);
     }
 }
 
 function runCode() {
     const code = document.getElementById('code').value;
-    const output = document.getElementById('output');
-    const emulator = new IBNIZEmulator(output);
+    const canvas = document.getElementById('outputCanvas');
+    const emulator = new IBNIZEmulator(canvas);
     emulator.run(code);
 }
