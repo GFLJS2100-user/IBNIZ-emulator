@@ -1,12 +1,19 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<title>IBNIZ Emulator</title>
-<script src="./main.js"></script>
+    <meta charset="UTF-8">
+    <title>IBNIZ Emulator</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        #output { width: 100%; height: 300px; border: 1px solid #000; }
+        #code { width: 100%; height: 100px; }
+    </style>
 </head>
-<canvas id="ibniz-canvas" width="256" height="256">
-</canvas><br>
-<form>
-	<input type="text" id="code" style="width: 256px"><br>
- <input type="checkbox" id="pause">Pause
+<body>
+    <h1>IBNIZ Emulator</h1>
+    <textarea id="code" placeholder="Enter IBNIZ code here..."></textarea>
+    <button onclick="runCode()">Run</button>
+    <div id="output"></div>
+    <script src="main.js"></script>
 </body>
 </html>
