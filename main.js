@@ -22,6 +22,7 @@ class IBNIZEmulator {
         this.stack = [];
         this.memory = new Uint32Array(0x100000); // 1 megaword address space
         this.T = 0; // Time counter
+        this.videoout = 0; // Initialize videoout
     }
 
     push(value) {
@@ -241,6 +242,56 @@ class IBNIZEmulator {
             const instr = this.code[this.instructionPointer++];
             this.executeInstruction(instr);
         }
+    }
+
+    render(c) {
+        var idd = c.createImageData(256,256);
+        var id = idd.data;
+        var imgpos = 0;
+        var cy = 0;
+        var cu = 0;
+        var cv = 0;
+        for (var y = 0; y < 256; y++) {
+            for (var x = 0; x < 256; x++) {
+                this.run(x, y);
+                this.videoout = this.stack.pop(); // Use videoout from stack
+                cy = (this.videoout >>> 8) & 255;
+                cu = (((this.videoout >>> 16) & 255) ^ 0x80) - 128;
+                cv = ((this.videoout >>> 24) ^ 0x80) - 128;
+                id[imgpos++] = (298 * cy + 409 * cv + 128) >> 8;
+                id[imgpos++] = (298 * cy - 100 * cu - 208 * cv + 128) >> 8;
+                id[imgpos++] = (298 * cy + 516 * cu + 128) >> 8;
+                id[imgpos++] = 255;
+                this.buffer[(y << 1)] = (((this.audioout & 65535) ^ 32768) - 32768) / 32768;
+            }
+        }
+        c.putImageData(idd, 0, 0);
+        this.renderAudio();
+    }
+
+    render2(c) {
+        var idd = c.createImageData(128, 128);
+        var id = idd.data;
+        var imgpos = 0;
+        var cy = 0;
+        var cu = 0;
+        var cv = 0;
+        for (var y = 0; y < 256; y += 2) {
+            for (var x = 0; x < 256; x += 2) {
+                this.run(x, y);
+                this.videoout = this.stack.pop(); // Use videoout from stack
+                cy = (this.videoout >>> 8) & 255;
+                cu = (((this.videoout >>> 16) & 255) ^ 0x80) - 128;
+                cv = ((this.videoout >>> 24) ^ 0x80) - 128;
+                id[imgpos++] = (298 * cy + 409 * cv + 128) >> 8;
+                id[imgpos++] = (298 * cy - 100 * cu - 208 * cv + 128) >> 8;
+                id[imgpos++] = (298 * cy + 516 * cu + 128) >> 8;
+                id[imgpos++] = 255;
+                this.buffer[(y << 1)] = (((this.audioout & 65535) ^ 32768) - 32768) / 32768;
+            }
+        }
+        c.putImageData(idd, 0, 0);
+        this.renderAudio();
     }
 }
 
